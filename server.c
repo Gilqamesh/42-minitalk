@@ -24,7 +24,6 @@ void	handlesigusr(int sig, siginfo_t *info, void *ucontext)
 		i = 0;
 		c = 0;
 	}
-	printf("%d ", info->si_pid);
 	if (info->si_pid)
 		kill(info->si_pid, SIGUSR1);
 }
@@ -37,14 +36,14 @@ int	main(void)
 	pid = getpid();
 	ft_putnbr_fd((int)pid, STDOUT_FILENO);
 	sa.__sigaction_u.__sa_sigaction = &handlesigusr;
-	sa.sa_flags = SA_RESTART;
+	sa.sa_flags = SA_SIGINFO;
 	sigaction(SIGUSR1, &sa, NULL);
 	sigaction(SIGUSR2, &sa, NULL);
 	while (1)
 	{
-		usleep(1000);
+		printf("Waiting for signal from the server\n");
 		pause();
-		usleep(1000);
+		printf("Processed the signal from the server\n");
 	}
 	return (0);
 }

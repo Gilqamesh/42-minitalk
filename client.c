@@ -13,7 +13,7 @@ void	handle_error(void)
 	exit(EXIT_FAILURE);
 }
 
-void	handlesigusr(int sig)
+void	handlesigusr(int sig, siginfo_t *info, void *ucontext)
 {
 
 }
@@ -29,8 +29,8 @@ int main(int argc, char **argv)
 	printf("Client pid: %d\n", (int)getpid());
 	if (argc != 3)
 		handle_error();
-	sa.__sigaction_u.__sa_handler = &handlesigusr;
-	sa.sa_flags = SA_RESTART;
+	sa.__sigaction_u.__sa_sigaction = &handlesigusr;
+	sa.sa_flags = SA_SIGINFO;
 	sigaction(SIGUSR1, &sa, NULL);
 	pid = ft_atoi(argv[1]);
 	tmp = argv[2];
@@ -45,9 +45,9 @@ int main(int argc, char **argv)
 			else
 				kill(pid, SIGUSR2);
 			cur <<= 1;
-			usleep(1000);
+			printf("Waiting for signal from the client\n");
 			pause();
-			usleep(1000);
+			printf("Processed the signal from the client\n");
 		}
 		tmp++;
 	}
