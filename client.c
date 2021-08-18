@@ -25,12 +25,15 @@ int main(int argc, char **argv)
 	pid_t				pid;
 	int					i;
 	struct sigaction	sa;
+	sigset_t			mask;
 
 	printf("Client pid: %d\n", (int)getpid());
 	if (argc != 3)
 		handle_error();
 	sa.__sigaction_u.__sa_sigaction = &handlesigusr;
 	sa.sa_flags = SA_SIGINFO;
+	sigemptyset(&mask);
+	sa.sa_mask = mask;
 	sigaction(SIGUSR1, &sa, NULL);
 	pid = ft_atoi(argv[1]);
 	tmp = argv[2];
@@ -40,14 +43,15 @@ int main(int argc, char **argv)
 		i = -1;
 		while (++i < 8)
 		{
+			usleep(100);
 			if (cur & 128)
 				kill(pid, SIGUSR1);
 			else
 				kill(pid, SIGUSR2);
 			cur <<= 1;
-			printf("Waiting for signal from the client\n");
+			// printf("Waiting for signal from the client\n");
 			pause();
-			printf("Processed the signal from the client\n");
+			// printf("Processed the signal from the client\n");
 		}
 		tmp++;
 	}

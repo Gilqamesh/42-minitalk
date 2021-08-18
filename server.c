@@ -24,6 +24,7 @@ void	handlesigusr(int sig, siginfo_t *info, void *ucontext)
 		i = 0;
 		c = 0;
 	}
+	usleep(100);
 	if (info->si_pid)
 		kill(info->si_pid, SIGUSR1);
 }
@@ -41,9 +42,9 @@ int	main(void)
 	sigaction(SIGUSR2, &sa, NULL);
 	while (1)
 	{
-		printf("Waiting for signal from the server\n");
+		// printf("Waiting for signal from the server\n");
 		pause();
-		printf("Processed the signal from the server\n");
+		// printf("Processed the signal from the server\n");
 	}
 	return (0);
 }
