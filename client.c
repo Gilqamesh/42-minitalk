@@ -4,7 +4,7 @@
 #include "minitalk.h"
 #include <stdio.h>
 
-void	handle_error(void)
+static void	handle_error(void)
 {
 	char	*tmp;
 
@@ -13,21 +13,38 @@ void	handle_error(void)
 	exit(EXIT_FAILURE);
 }
 
-void	handlesigusr(int sig, siginfo_t *info, void *ucontext)
+static void	handlesigusr(int sig, siginfo_t *info, void *ucontext)
 {
-
 }
 
-int main(int argc, char **argv)
+static void	send_message(char *message, pid_t pid)
 {
-	char				*tmp;
-	char				cur;
-	pid_t				pid;
-	int					i;
+	int		i;
+	char	byte;
+
+	while (*message)
+	{
+		byte = *message;
+		i = -1;
+		while (++i < 8)
+		{
+			usleep(50);
+			if (byte & 128)
+				kill(pid, SIGUSR1);
+			else
+				kill(pid, SIGUSR2);
+			byte <<= 1;
+			pause();
+		}
+		message++;
+	}
+}
+
+int	main(int argc, char **argv)
+{
 	struct sigaction	sa;
 	sigset_t			mask;
 
-	printf("Client pid: %d\n", (int)getpid());
 	if (argc != 3)
 		handle_error();
 	sa.__sigaction_u.__sa_sigaction = &handlesigusr;
@@ -35,25 +52,6 @@ int main(int argc, char **argv)
 	sigemptyset(&mask);
 	sa.sa_mask = mask;
 	sigaction(SIGUSR1, &sa, NULL);
-	pid = ft_atoi(argv[1]);
-	tmp = argv[2];
-	while (*tmp)
-	{
-		cur = *tmp;
-		i = -1;
-		while (++i < 8)
-		{
-			usleep(100);
-			if (cur & 128)
-				kill(pid, SIGUSR1);
-			else
-				kill(pid, SIGUSR2);
-			cur <<= 1;
-			// printf("Waiting for signal from the client\n");
-			pause();
-			// printf("Processed the signal from the client\n");
-		}
-		tmp++;
-	}
+	send_message(argv[2], ft_atoi(argv[1]));
 	return (0);
 }
